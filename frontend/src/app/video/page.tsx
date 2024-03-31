@@ -40,6 +40,9 @@ export default function Home() {
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
   const peerInstance = useRef<Peer | null>(null);
   const myConn = useRef<DataConnection | null>(null);
+  const [lang, setLang] = useState<string>("");
+
+  const [sentence_id, set_sentence_id] = useState<string>("");
 
   const [copied, setCopied] = useState<boolean>(false);
   const [meetingStarted, setMeetingStarted] = useState<boolean>(false);
@@ -122,7 +125,7 @@ export default function Home() {
       setUuid(result.data.session.user.id);
       getUserData(result.data.session.user.id).then(res1 => {
         console.log("WORKED", res1[0].lang);
-        window.sessionStorage.setItem("lang", res1[0].lang);
+        setLang(res1[0].lang);
         setVoiceId(res1[0].audio_id)
         setVoiceClassif(res1[0].classification)
       })
@@ -137,17 +140,28 @@ export default function Home() {
   }, [meetingStarted]);
 
   const handleData = (data: any) => {
-    console.log("LANG", window.sessionStorage.getItem("lang"));
+    console.log("LANG", lang);
     let tempData = data;
-    tempData.sentence_id = "";
-    tempData.target_lang = window.sessionStorage.getItem("lang");
+    tempData.sentence_id = sentence_id;
+    tempData.target_lang = lang;
     console.log(tempData);
     fetch(apiUrl + "/sendfull", {method: "POST", body: JSON.stringify(tempData)}).then(res => res.json()).then(result => {
       if (result.output_id) {
         setCurrentTranscription(result.translation);
         playAudioOnce(apiUrl + "/audio/" + result.output_id);
+        set_sentence_id("");
         
       }
+    })
+  }
+
+  const handlePartial = (data: any) => {
+    console.log("LANG", lang);
+    let tempData = data;
+    tempData.target_lang = lang;
+    console.log(tempData);
+    fetch(apiUrl + "/sendpartial", {method: "POST", body: JSON.stringify(tempData)}).then(res => res.json()).then(result => {
+      set_sentence_id(result.sentence_id)
     })
   }
 
@@ -166,7 +180,11 @@ export default function Home() {
           
           conn.on("data", (data: any) => {
             console.log("Received data", data);
-            handleData(data);
+            if (data.type == "sendpartial") {
+              handlePartial(data);
+            } else {
+              handleData(data);
+            }
           });
           const call = peerInstance.current.call(otherPeerID, stream);
           call.on("stream", function (stream: any) {
@@ -317,11 +335,15 @@ export default function Home() {
             
             <HStack mt="3">
               
-            <SpeechRecog handlePartial = {(e: string) => {console.log(e)}} handleFinal = {(e: string) => {
+            <SpeechRecog handleFinal = {(e: string) => {
               if (myConn.current) {
                 myConn.current.send({"type": "sendfull", "words": e, "voice_id": voiceId, "voice_class": voiceClassif});
               }
-            }} lang={window.sessionStorage.getItem("lang")} />
+            }} handlePartial = {(e: string) => {
+              if (myConn.current) {
+                myConn.current.send({"type": "sendpartial", "words": e, "voice_id": voiceId, "voice_class": voiceClassif});
+              }
+            }} lang={lang} />
 
 <IconButton size="2xl" colorScheme='gray'
       aria-label='Search database'

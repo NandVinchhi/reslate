@@ -63,6 +63,7 @@ async def send_partial(request: Request):
     t_arr = translate_text(partial_input["target_lang"], [ta, tb])
     tra = t_arr[0]
     trb = t_arr[1]
+
     oa, ob = generate_parallel(tra, trb, partial_input["voice_id"], partial_input["voice_class"])
     
     d = {}

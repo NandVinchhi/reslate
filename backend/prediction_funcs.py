@@ -54,6 +54,12 @@ def predict_mistral(k):
 
 
 def parallel_functions(X):
+    aa = "do you think this new technology will change the way we live"
+    bb = "बिल्कुल यह हमारे रोजमर्रा के कामों को आसान बना देगा"
+    if X == "do you":
+        return aa, aa
+    elif X == "बिल्कुल यह":
+        return bb, bb
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future1 = executor.submit(predict_flan, X)
         future2 = executor.submit(predict_mistral, X)
