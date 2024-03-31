@@ -21,11 +21,13 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  IconButton
 } from "@chakra-ui/react";
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavbarComponent } from "@/components/Navbar/NavbarComponent";
 import { SpeechRecog }from "../../components/Dashboard/SpeechRecog.jsx";
 import { getSession, getUserData, apiUrl } from "@/components/SupabaseFunctions";
+import { BiSolidVideo, BiSolidPhone } from "react-icons/bi";
 
 export default function Home() {
   const router = useRouter();
@@ -46,6 +48,8 @@ export default function Home() {
   const [voiceId, setVoiceId] = useState<string>("");
   const [voiceClassif, setVoiceClassif] = useState<string>("");
 
+  const [currentTranscription, setCurrentTranscription] = useState<string>("");
+
   function playAudioOnce(audioUrl: string) {
     // Create a new audio element
     const audio = new Audio(audioUrl);
@@ -53,12 +57,15 @@ export default function Home() {
     // Set up event listener to remove the audio element when playback ends
     audio.addEventListener('ended', () => {
       audio.remove();
+      setCurrentTranscription("");
     });
   
     // Play the audio
     audio.play().catch(error => {
       console.error('Failed to play audio:', error);
     });
+
+    
   }
 
   useEffect(() => {
@@ -137,7 +144,9 @@ export default function Home() {
     console.log(tempData);
     fetch(apiUrl + "/sendfull", {method: "POST", body: JSON.stringify(tempData)}).then(res => res.json()).then(result => {
       if (result.output_id) {
+        setCurrentTranscription(result.translation);
         playAudioOnce(apiUrl + "/audio/" + result.output_id);
+        
       }
     })
   }
@@ -294,19 +303,39 @@ export default function Home() {
           </>
         )}
         {meetingStarted && (
-          <div>
+          <VStack>
+            
+            <HStack mt="2" >
+            <div style={{borderRadius: "16px", width: "800px", objectFit: "cover"}}>
+              
+              <video style={{zIndex: 0, borderRadius: "16px", minWidth: "100%", minHeight: "100%", objectFit: "cover"}} ref={currentUserVideoRef} />
+            </div>
+            <div style={{width: "800px", objectFit: "cover"}}>
+              <video style={{borderRadius: "16px", minWidth: "100%", minHeight: "100%", objectFit: "cover"}} ref={remoteVideoRef} />
+            </div>
+            </HStack>
+            
+            <HStack mt="3">
+              
             <SpeechRecog handlePartial = {(e: string) => {console.log(e)}} handleFinal = {(e: string) => {
               if (myConn.current) {
                 myConn.current.send({"type": "sendfull", "words": e, "voice_id": voiceId, "voice_class": voiceClassif});
               }
             }} lang={window.sessionStorage.getItem("lang")} />
-            <div>
-              <video ref={currentUserVideoRef} />
-            </div>
-            <div>
-              <video ref={remoteVideoRef} />
-            </div>
-          </div>
+
+<IconButton size="2xl" colorScheme='gray'
+      aria-label='Search database'
+      icon={<BiSolidVideo size={32}/>}></IconButton>
+
+<IconButton size="2xl" colorScheme='red' onClick={() => {router.push("/video/");
+
+setTimeout(() => window.location.reload(), 200)}}
+      aria-label='Search database'
+      icon={<BiSolidPhone size={32}/>}></IconButton>
+            </HStack>
+            
+            <Text mt="4" fontSize={"xl"}>{currentTranscription}</Text>
+          </VStack>
         )}
       </VStack>
     </>

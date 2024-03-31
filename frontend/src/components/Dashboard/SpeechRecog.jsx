@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { BiSolidMicrophone, BiSolidMicrophoneOff } from "react-icons/bi";
+import { IconButton } from '@chakra-ui/react';
 
 const SpeechRecog = (props) => {
   const [interimResult, setInterimResult] = useState('');
@@ -78,7 +80,11 @@ const SpeechRecog = (props) => {
           stopRecognition()
           setMuted(true);
         }
-      }}>{muted ? "Unmute" : "Mute"}</button>
+      }}>{muted ? <IconButton size="2xl" colorScheme='red'
+      aria-label='Search database'
+      icon={<BiSolidMicrophoneOff size={32} />}></IconButton > :<IconButton size="2xl" colorScheme='gray'
+      aria-label='Search database'
+      icon={<BiSolidMicrophone size={32}/>}></IconButton>}</button>
     </div>
   );
 };
