@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "./providers";
-import "regenerator-runtime/runtime";
+
 
 export const metadata: Metadata = {
   title: "ReSlate - Immersive translation",

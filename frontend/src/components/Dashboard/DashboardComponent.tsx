@@ -31,8 +31,8 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import { FiSearch } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { useControllableProp, useControllableState } from "@chakra-ui/react";
-import { getSession, onboardUser } from "../SupabaseFunctions";
-import { get } from "http";
+import { getSession, onboardUser, apiUrl } from "../SupabaseFunctions";
+import { METHODS, get } from "http";
 
 // const trainingText: { [key: string]: string } = {
 //   en: "In the heart of the city, a green-eyed cat reveals a secret garden at dusk, accessible only to those who believe in magic.",
@@ -146,9 +146,7 @@ export const DashboardComponent = () => {
               onClick={() => {
                 finishOnBoarding(
                   uuid,
-                  lang,
-                  "some_audio_id",
-                  "some_classification"
+                  lang
                 );
                 router.push("/video");
               }}
@@ -163,10 +161,8 @@ export const DashboardComponent = () => {
 
 export async function finishOnBoarding(
   uuid: string,
-  lang: string,
-  audio_id: string,
-  classification: string
+  lang: string
 ) {
-  await onboardUser(uuid, lang, audio_id, classification);
+  await onboardUser(uuid, lang, "audio_id", "M/F");
   return;
 }
