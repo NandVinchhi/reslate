@@ -87,6 +87,7 @@ export const DashboardComponent = () => {
   });
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [audioURL, setAudioURL] = useState<string>("");
 
   const handleSearch = (newSearch: string) => {
     setSearch(newSearch);
@@ -97,6 +98,10 @@ export const DashboardComponent = () => {
       setUuid(result.data.session.user.id);
     });
   }, []);
+
+  const handleAudio = (k: any) => {
+    setAudioURL(k);
+  }
 
   return (
     
@@ -133,7 +138,7 @@ export const DashboardComponent = () => {
               <Text py="2" as="b" fontSize="2xl">
                 {teksht.filter((set) => set[0] === internalLang)[0][1]}
               </Text>
-              <AudioRecorder setRecorded={setRecorded} />
+              <AudioRecorder setRecorded={setRecorded} handleAudio={handleAudio} />
             </Stack>
 
             <Button
@@ -144,9 +149,11 @@ export const DashboardComponent = () => {
               mt="2"
               isDisabled={!recorded}
               onClick={() => {
+                
                 finishOnBoarding(
                   uuid,
-                  lang
+                  lang,
+                  audioURL
                 );
                 router.push("/video");
               }}
@@ -159,10 +166,29 @@ export const DashboardComponent = () => {
   );
 };
 
-export async function finishOnBoarding(
-  uuid: string,
-  lang: string
-) {
-  await onboardUser(uuid, lang, "audio_id", "M/F");
-  return;
+async function finishOnBoarding(uuid: string, lang: string, audioURL: string) {
+  try {
+    const response = await fetch(audioURL);
+    const audioBlob = await response.blob();
+
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'audio.mp3');
+
+    const uploadResponse = await fetch(apiUrl + "/createvoice", {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await uploadResponse.json();
+    console.log('Upload successful:', data);
+
+    const onboardResponse = await onboardUser(uuid, lang, data.voice_id, data.prediction);
+    console.log(onboardResponse);
+
+    return;
+  } catch (error) {
+    console.error('Error during onboarding:', error);
+    // Handle the error as needed
+    throw error;
+  }
 }

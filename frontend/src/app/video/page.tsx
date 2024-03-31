@@ -151,7 +151,7 @@ export default function Home() {
                   <CardBody>
                     <Heading size="md">Create your meeting room</Heading>
                     <VStack align="center">
-                      <Text py="2">
+                      <Text py="2" mt="3">
                         Share this link with others to join your meeting room
                       </Text>
                     </VStack>

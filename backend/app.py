@@ -7,8 +7,21 @@ from voice_classify import predict
 from prediction_funcs import parallel_functions
 from translate import translate_text
 import json
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/createvoice")
 async def create_voice_endpoint(file: UploadFile = File(...)):

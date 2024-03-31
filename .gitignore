@@ -10,3 +10,4 @@ backend/.env
 /voice_classifier/voicedata
 /prediction_model/flan-t5-samsum
 /prediction_model/results
+/backend/voices
