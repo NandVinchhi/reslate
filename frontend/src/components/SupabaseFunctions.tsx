@@ -110,3 +110,5 @@ export async function onboardUser(
   }
   return data;
 }
+
+export const apiUrl = "http://localhost:8000"

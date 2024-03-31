@@ -25,11 +25,6 @@ import {
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavbarComponent } from "@/components/Navbar/NavbarComponent";
 
-declare global {
-  interface Window {
-    webkitSpeechRecognition: any;
-  }
-}
 
 export default function Home() {
   const router = useRouter();

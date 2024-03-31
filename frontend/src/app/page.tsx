@@ -6,7 +6,7 @@ import { LandingComponent } from "@/components/Landing/LandingComponent";
 import { getSession } from "@/components/SupabaseFunctions";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import "regenerator-runtime/runtime";
+
 
 const Home = () => {
   const router = useRouter();
