@@ -102,3 +102,9 @@ def generate_parallel(ta, tb, voice_id, voice_classification):
         result2 = future2.result()
 
     return result1, result2
+
+vid = create_voice("srk_ff.mp3")
+
+oid = generate_audio("There is a person on the other side of the border. He will give his life for you.", vid, "M")
+
+print(oid)
