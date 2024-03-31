@@ -1,0 +1,12 @@
+
+.DS_Store
+backend/.env
+/backend/__pycache__
+/backend/checkpoints
+/backend/fine_tuned_model
+/backend/processed
+/frontend/.next
+/frontend/node_modules
+/voice_classifier/voicedata
+/prediction_model/flan-t5-samsum
+/prediction_model/results
