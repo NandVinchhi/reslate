@@ -24,6 +24,8 @@ import {
 } from "@chakra-ui/react";
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavbarComponent } from "@/components/Navbar/NavbarComponent";
+import { SpeechRecog }from "../../components/Dashboard/SpeechRecog.jsx";
+import { getSession, getUserData } from "@/components/SupabaseFunctions";
 
 export default function Home() {
   const router = useRouter();
@@ -38,7 +40,21 @@ export default function Home() {
   const [copied, setCopied] = useState<boolean>(false);
   const [meetingStarted, setMeetingStarted] = useState<boolean>(false);
 
+  const [lang, setLang] = useState<string>("en");
+  const [uuid, setUuid] = useState<string>("");
+  const [voiceId, setVoiceId] = useState<string>("");
+  const [voiceClassif, setVoiceClassif] = useState<string>("");
+
   useEffect(() => {
+    getSession().then((result) => {
+      setUuid(result.data.session.user.id);
+      getUserData(result.data.session.user.id).then(res1 => {
+        console.log("WORKED", res1[0]);
+        setLang(res1[0].lang)
+        setVoiceId(res1[0].audio_id)
+        setVoiceClassif(res1[0].classification)
+      })
+    });
     const peer = new Peer();
     peer.on("open", (id) => {
       setPeerId(id);
@@ -56,7 +72,6 @@ export default function Home() {
           setMeetingStarted(true);
           setTimeout(() => {
             console.log("Stream: ", stream);
-            console.log("BREAKPOINT A", currentUserVideoRef.current);
             if (currentUserVideoRef.current) {
               currentUserVideoRef.current.srcObject = stream;
               currentUserVideoRef.current.play();
@@ -198,17 +213,7 @@ export default function Home() {
           </>
         )}
         {incomingPeerId && !meetingStarted && (
-          // <Container>
-          //   <Button variant="solid" onClick={() => call(remotePeerIDValue)}>
-          //     Call
-          //   </Button>
-          //   <div>
-          //     <video ref={currentUserVideoRef} />
-          //   </div>
-          //   <div>
-          //     <video ref={remoteVideoRef} />
-          //   </div>
-          // </Container>
+          
           <>
             <Center>
               <Card
@@ -242,6 +247,7 @@ export default function Home() {
         )}
         {meetingStarted && (
           <div>
+            <SpeechRecog handlePartial = {(e: string) => {console.log(e)}} handleFinal = {(e: string) => {console.log(e)}} lang={lang} />
             <div>
               <video ref={currentUserVideoRef} />
             </div>

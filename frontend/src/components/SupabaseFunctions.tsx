@@ -111,4 +111,14 @@ export async function onboardUser(
   return data;
 }
 
+export async function getUserData(
+  id: string
+): Promise<any> {
+  const {data, error} = await supabase.from("t-app").select().eq("uuid", id);
+  if (error) {
+    console.log(error);
+  }
+  return data;
+}
+
 export const apiUrl = "http://localhost:8000"
