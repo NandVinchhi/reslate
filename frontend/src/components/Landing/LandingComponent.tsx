@@ -28,22 +28,11 @@ export const LandingComponent = () => {
         >
           <Box textAlign="center">
             <Center mb="8">
-              <Logo height={14} />
+              <Logo height={28} />
             </Center>
-            <Heading
-              as="h1"
-              size="3xl"
-              fontWeight="extrabold"
-              maxW="3xl"
-              mx="auto"
-              lineHeight="1.2"
-              letterSpacing="tight"
-            >
-              A cool descriptive title here
-            </Heading>
             <Text fontSize="xl" mt="4" maxW="3xl" mx="auto">
-              This is a subtitle that explains some more stuff about how the
-              product works. Maybe mention a couple of the core features.
+              An immersive application that bridges language barriers in
+              real-time for seamless cross-lingual communication.
             </Text>
           </Box>
 
@@ -87,8 +76,8 @@ export const LandingComponent = () => {
             overflow="hidden"
           >
             <Img
-              alt="Screenshot of Envelope App"
-              src="https://res.cloudinary.com/chakra-ui-pro/image/upload/v1621085270/pro-website/app-screenshot-light_kit2sp.png"
+              alt="Screenshot of Onboarding section of Reslate"
+              src="Landing.png"
             />
           </Box>
         </Box>
