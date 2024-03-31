@@ -2,7 +2,7 @@
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import "regenerator-runtime/runtime";
-import Peer from "peerjs";
+import Peer, { DataConnection } from "peerjs";
 import { useEffect, useRef, useState } from "react";
 import {
   Card,
@@ -25,7 +25,7 @@ import {
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavbarComponent } from "@/components/Navbar/NavbarComponent";
 import { SpeechRecog }from "../../components/Dashboard/SpeechRecog.jsx";
-import { getSession, getUserData } from "@/components/SupabaseFunctions";
+import { getSession, getUserData, apiUrl } from "@/components/SupabaseFunctions";
 
 export default function Home() {
   const router = useRouter();
@@ -37,24 +37,32 @@ export default function Home() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const currentUserVideoRef = useRef<HTMLVideoElement>(null);
   const peerInstance = useRef<Peer | null>(null);
+  const myConn = useRef<DataConnection | null>(null);
+
   const [copied, setCopied] = useState<boolean>(false);
   const [meetingStarted, setMeetingStarted] = useState<boolean>(false);
 
-  const [lang, setLang] = useState<string>("en");
   const [uuid, setUuid] = useState<string>("");
   const [voiceId, setVoiceId] = useState<string>("");
   const [voiceClassif, setVoiceClassif] = useState<string>("");
 
-  useEffect(() => {
-    getSession().then((result) => {
-      setUuid(result.data.session.user.id);
-      getUserData(result.data.session.user.id).then(res1 => {
-        console.log("WORKED", res1[0]);
-        setLang(res1[0].lang)
-        setVoiceId(res1[0].audio_id)
-        setVoiceClassif(res1[0].classification)
-      })
+  function playAudioOnce(audioUrl: string) {
+    // Create a new audio element
+    const audio = new Audio(audioUrl);
+  
+    // Set up event listener to remove the audio element when playback ends
+    audio.addEventListener('ended', () => {
+      audio.remove();
     });
+  
+    // Play the audio
+    audio.play().catch(error => {
+      console.error('Failed to play audio:', error);
+    });
+  }
+
+  useEffect(() => {
+    
     const peer = new Peer();
     peer.on("open", (id) => {
       setPeerId(id);
@@ -64,6 +72,15 @@ export default function Home() {
     if (incomingPeerId) {
       setRemotePeerIDValue(incomingPeerId);
     }
+
+    peer.on("connection", (conn) => {
+      myConn.current = conn;
+      
+      conn.on("data", (data) => {
+        console.log("Received data", data);
+        handleData(data);
+      });
+    });
 
     peer.on("call", (call) => {
       navigator.mediaDevices
@@ -94,12 +111,36 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    getSession().then((result) => {
+      setUuid(result.data.session.user.id);
+      getUserData(result.data.session.user.id).then(res1 => {
+        console.log("WORKED", res1[0].lang);
+        window.sessionStorage.setItem("lang", res1[0].lang);
+        setVoiceId(res1[0].audio_id)
+        setVoiceClassif(res1[0].classification)
+      })
+    });
+  }, [])
+  useEffect(() => {
     console.log("Meeting started: ", meetingStarted);
   }, [meetingStarted]);
 
   useEffect(() => {
     console.log(currentUserVideoRef.current, remoteVideoRef.current);
   }, [meetingStarted]);
+
+  const handleData = (data: any) => {
+    console.log("LANG", window.sessionStorage.getItem("lang"));
+    let tempData = data;
+    tempData.sentence_id = "";
+    tempData.target_lang = window.sessionStorage.getItem("lang");
+    console.log(tempData);
+    fetch(apiUrl + "/sendfull", {method: "POST", body: JSON.stringify(tempData)}).then(res => res.json()).then(result => {
+      if (result.output_id) {
+        playAudioOnce(apiUrl + "/audio/" + result.output_id);
+      }
+    })
+  }
 
   function call(otherPeerID: string) {
     navigator.mediaDevices
@@ -111,6 +152,13 @@ export default function Home() {
           currentUserVideoRef.current.play();
         }
         if (peerInstance.current) {
+          const conn = peerInstance.current.connect(otherPeerID);
+          myConn.current = conn;
+          
+          conn.on("data", (data: any) => {
+            console.log("Received data", data);
+            handleData(data);
+          });
           const call = peerInstance.current.call(otherPeerID, stream);
           call.on("stream", function (stream: any) {
             if (remoteVideoRef.current) {
@@ -247,7 +295,11 @@ export default function Home() {
         )}
         {meetingStarted && (
           <div>
-            <SpeechRecog handlePartial = {(e: string) => {console.log(e)}} handleFinal = {(e: string) => {console.log(e)}} lang={lang} />
+            <SpeechRecog handlePartial = {(e: string) => {console.log(e)}} handleFinal = {(e: string) => {
+              if (myConn.current) {
+                myConn.current.send({"type": "sendfull", "words": e, "voice_id": voiceId, "voice_class": voiceClassif});
+              }
+            }} lang={window.sessionStorage.getItem("lang")} />
             <div>
               <video ref={currentUserVideoRef} />
             </div>

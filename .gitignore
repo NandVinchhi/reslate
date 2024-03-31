@@ -11,3 +11,4 @@ backend/.env
 /prediction_model/flan-t5-samsum
 /prediction_model/results
 /backend/voices
+/backend/outputs

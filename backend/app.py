@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from starlette.responses import FileResponse
 import os
 import uuid
@@ -6,6 +6,8 @@ from voice_funcs import create_voice, generate_parallel, generate_audio
 from voice_classify import predict
 from prediction_funcs import parallel_functions
 from translate import translate_text
+from pydantic import BaseModel
+
 import json
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -53,23 +55,26 @@ async def get_audio(audio_id: str):
     
     return FileResponse(file_path, media_type="audio/wav")
 
+class PartialInput(BaseModel):
+    words: str
+    target_lang: str
+    voice_class: str
+    voice_id: str
+
 @app.post("/sendpartial")
-async def send_partial(words: str, target_lang: str, voice_class: str, voice_id: str):
+async def send_partial(partial_input: PartialInput):
     sentence_id = uuid.uuid1()
-
-    ta, tb = parallel_functions(words)
-
-    t_arr = translate_text(target_lang, [ta, tb])
-
+    ta, tb = parallel_functions(partial_input.words)
+    t_arr = translate_text(partial_input.target_lang, [ta, tb])
     tra = t_arr[0]
     trb = t_arr[1]
-
-    oa, ob = generate_parallel(tra, trb, voice_id, voice_class)
+    oa, ob = generate_parallel(tra, trb, partial_input.voice_id, partial_input.voice_class)
+    
     d = {}
     with open("processing.json", "r") as f:
-        d = json.loads(f)
-
-    d[sentence_id] = {
+        d = json.load(f)
+    
+    d[str(sentence_id)] = {
         "output_a": oa,
         "output_b": ob,
         "transcript_a": ta,
@@ -79,33 +84,31 @@ async def send_partial(words: str, target_lang: str, voice_class: str, voice_id:
     }
     
     with open("processing.json", "w") as f:
-        json.dumps(d, f)
+        json.dump(d, f)
+    
+    return {"sentence_id": str(sentence_id)}
 
-    return {"sentence_id": sentence_id}
 
 @app.post("/sendfull")
-async def send_full(sentence_id: str, words: str, target_lang: str, voice_class: str, voice_id: str):
+async def send_full(request: Request):
+    full_input = await request.json()
+    
     d = {}
-
     with open("processing.json", "r") as f:
-        d = json.loads(f)
+        d = json.load(f)
 
     try:
-        dd = d[sentence_id]
-        if dd["transcript_a"] == words:
+        dd = d[full_input["sentence_id"]]
+        if dd["transcript_a"] == full_input["words"]:
             return {"output_id": dd["output_a"], "translation": dd["translated_a"]}
-        if dd["transcript_b"] == words:
+        if dd["transcript_b"] == full_input["words"]:
             return {"output_id": dd["output_b"], "translation": dd["translated_b"]}
-    except:
+    except KeyError:
         pass
 
-    t_arr = translate_text(target_lang, [words])
-
+    t_arr = translate_text(full_input["target_lang"], [full_input["words"]])
     t = t_arr[0]
-
-    o_id = generate_audio(t, voice_id, voice_class)
-    
-
+    o_id = generate_audio(t, full_input["voice_id"], full_input["voice_class"])
     return {"output_id": o_id, "translation": t}
 
 if __name__ == "__main__":
