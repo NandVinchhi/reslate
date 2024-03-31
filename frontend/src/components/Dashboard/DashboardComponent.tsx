@@ -111,10 +111,10 @@ export const DashboardComponent = () => {
             <Heading size="md">Let's train your voice model</Heading>
             <Text py="2">Choose your desired language.</Text>
             <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+              <MenuButton as={Button} variant="outline" fontSize="lg" rightIcon={<ChevronDownIcon />}>
                 {lang ? lang : "Lang"}
               </MenuButton>
-              <MenuList>
+              <MenuList >
                 <MenuItem onClick={() => setInternalLang("en")}>en</MenuItem>
                 <MenuItem onClick={() => setInternalLang("de")}>de</MenuItem>
                 <MenuItem onClick={() => setInternalLang("hi")}>hi</MenuItem>
