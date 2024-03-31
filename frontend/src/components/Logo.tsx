@@ -3,8 +3,8 @@ import { chakra, type HTMLChakraProps } from "@chakra-ui/react";
 export const Logo = (props: HTMLChakraProps<"svg">) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="363"
-    height="126"
+    width={Number(props.height) < 12 ? "182" : "363"}
+    height={Number(props.height) < 12 ? "63" : "126"}
     viewBox="0 0 363 126"
     fill="none"
   >
