@@ -25,7 +25,6 @@ import {
 import { CopyIcon } from "@chakra-ui/icons";
 import { NavbarComponent } from "@/components/Navbar/NavbarComponent";
 
-
 export default function Home() {
   const router = useRouter();
   const incomingPeerIdParams = useSearchParams();
@@ -52,7 +51,7 @@ export default function Home() {
 
     peer.on("call", (call) => {
       navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
+        .getUserMedia({ video: true, audio: false })
         .then((stream) => {
           setMeetingStarted(true);
           setTimeout(() => {
@@ -89,7 +88,7 @@ export default function Home() {
 
   function call(otherPeerID: string) {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         console.log("Stream: ", stream);
         if (currentUserVideoRef.current) {
@@ -133,124 +132,125 @@ export default function Home() {
     //   </div>
     // </div>
     <>
-    {!meetingStarted && (
-      <NavbarComponent showButtons={true} isLoggedIn={true} />
-    )}
-    <VStack h="700" align="center">
-      {!incomingPeerId && !meetingStarted && (
-        <>
-        
-        <Center>
-          <Card
-            w="110%"
-            p={{ base: "6", md: "8" }}
-            my={{ base: "48", sm: "60" }}
-            direction={{ base: "column", sm: "row" }}
-            overflow="hidden"
-            variant="outline"
-          >
-            <Stack>
-              <CardBody>
-                <Heading size="md">Create your meeting room</Heading>
-                <VStack align="center">
-                  <Text py="2">
-                    Share this link with others to join your meeting room
-                  </Text>
-                </VStack>
-                <InputGroup>
-                  <InputLeftAddon
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard
-                          .writeText(
-                            "http://localhost:3000/video?peerId=" + peerId
-                          )
-                          .then(() => {
-                            setCopied(true);
-                          });
-                        console.log("Content copied to clipboard");
-                      } catch (err) {
-                        console.error("Failed to copy: ", err);
-                      }
-                    }}
-                  >
-                    <CopyIcon />
-                  </InputLeftAddon>
-                  <Input
-                    type="text"
-                    placeholder={"http://localhost:3000/video?peerId=" + peerId}
-                    isDisabled={true}
-                  />
-                </InputGroup>
-                {/* <Text py="2">
+      {!meetingStarted && (
+        <NavbarComponent showButtons={true} isLoggedIn={true} />
+      )}
+      <VStack h="700" align="center">
+        {!incomingPeerId && !meetingStarted && (
+          <>
+            <Center>
+              <Card
+                w="110%"
+                p={{ base: "6", md: "8" }}
+                my={{ base: "48", sm: "60" }}
+                direction={{ base: "column", sm: "row" }}
+                overflow="hidden"
+                variant="outline"
+              >
+                <Stack>
+                  <CardBody>
+                    <Heading size="md">Create your meeting room</Heading>
+                    <VStack align="center">
+                      <Text py="2">
+                        Share this link with others to join your meeting room
+                      </Text>
+                    </VStack>
+                    <InputGroup>
+                      <InputLeftAddon
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard
+                              .writeText(
+                                "http://localhost:3000/video?peerId=" + peerId
+                              )
+                              .then(() => {
+                                setCopied(true);
+                              });
+                            console.log("Content copied to clipboard");
+                          } catch (err) {
+                            console.error("Failed to copy: ", err);
+                          }
+                        }}
+                      >
+                        <CopyIcon />
+                      </InputLeftAddon>
+                      <Input
+                        type="text"
+                        placeholder={
+                          "http://localhost:3000/video?peerId=" + peerId
+                        }
+                        isDisabled={true}
+                      />
+                    </InputGroup>
+                    {/* <Text py="2">
                 Your meeting link is{" "}
                 <strong>
                   {"http://localhost:3000/video?peerId=" + peerId}
                 </strong>
               </Text> */}
-                <Text pt="2" align="center" color="green.500">
-                  {copied ? "Copied!" : ""}
-                </Text>
-              </CardBody>
-            </Stack>
-          </Card>
-        </Center>
-        </>
-      )}
-      {incomingPeerId && !meetingStarted && (
-        // <Container>
-        //   <Button variant="solid" onClick={() => call(remotePeerIDValue)}>
-        //     Call
-        //   </Button>
-        //   <div>
-        //     <video ref={currentUserVideoRef} />
-        //   </div>
-        //   <div>
-        //     <video ref={remoteVideoRef} />
-        //   </div>
-        // </Container>
-        <>
-        <Center>
-          <Card
-            w="110%"
-            p={{ base: "6", md: "8" }}
-            my={{ base: "48", sm: "60" }}
-            direction={{ base: "column", sm: "row" }}
-            overflow="hidden"
-            variant="outline"
-          >
-            <Stack>
-              <CardBody>
-                <Heading size="md">You are about to join a meeting</Heading>
-                <VStack align="center">
-                  <Button
-                    mt={{ base: "4", md: "6" }}
-                    variant="solid"
-                    onClick={() => {
-                      call(remotePeerIDValue);
-                      setMeetingStarted(true);
-                    }}
-                  >
-                    Attend Meeting
-                  </Button>
-                </VStack>
-              </CardBody>
-            </Stack>
-          </Card>
-        </Center>
-        </>
-      )}
-      {meetingStarted && (
-        <div>
+                    <Text pt="2" align="center" color="green.500">
+                      {copied ? "Copied!" : ""}
+                    </Text>
+                  </CardBody>
+                </Stack>
+              </Card>
+            </Center>
+          </>
+        )}
+        {incomingPeerId && !meetingStarted && (
+          // <Container>
+          //   <Button variant="solid" onClick={() => call(remotePeerIDValue)}>
+          //     Call
+          //   </Button>
+          //   <div>
+          //     <video ref={currentUserVideoRef} />
+          //   </div>
+          //   <div>
+          //     <video ref={remoteVideoRef} />
+          //   </div>
+          // </Container>
+          <>
+            <Center>
+              <Card
+                w="110%"
+                p={{ base: "6", md: "8" }}
+                my={{ base: "48", sm: "60" }}
+                direction={{ base: "column", sm: "row" }}
+                overflow="hidden"
+                variant="outline"
+              >
+                <Stack>
+                  <CardBody>
+                    <Heading size="md">You are about to join a meeting</Heading>
+                    <VStack align="center">
+                      <Button
+                        mt={{ base: "4", md: "6" }}
+                        variant="solid"
+                        onClick={() => {
+                          call(remotePeerIDValue);
+                          setMeetingStarted(true);
+                        }}
+                      >
+                        Attend Meeting
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Stack>
+              </Card>
+            </Center>
+          </>
+        )}
+        {meetingStarted && (
           <div>
-            <video ref={currentUserVideoRef} />
+            <div>
+              <video ref={currentUserVideoRef} />
+            </div>
+            <div>
+              <video ref={remoteVideoRef} />
+            </div>
           </div>
-          <div>
-            <video ref={remoteVideoRef} />
-          </div>
-        </div>
-      )}
-    </VStack>
+        )}
+      </VStack>
     </>
   );
 }
